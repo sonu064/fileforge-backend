@@ -17,4 +17,6 @@ public class PaymentDTO {
     private Boolean success;
     private String message;
     private String orderId;
+    /** Razorpay public key id, returned so the checkout always matches the order's account. */
+    private String keyId;
 }

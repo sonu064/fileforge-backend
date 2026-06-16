@@ -4,12 +4,15 @@ import in.bushansirgur.cloudshareapi.document.PaymentTransaction;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentTransactionRepository extends MongoRepository<PaymentTransaction, String> {
 
-    List<PaymentTransaction> findByClerkId(String clerkId);
+    Optional<PaymentTransaction> findByOrderId(String orderId);
 
-    List<PaymentTransaction> findByClerkIdOrderByTransactionDateDesc(String clerkId);
+    List<PaymentTransaction> findByUserId(String userId);
 
-    List<PaymentTransaction> findByClerkIdAndStatusOrderByTransactionDateDesc(String clerkId, String status);
+    List<PaymentTransaction> findByUserIdOrderByTransactionDateDesc(String userId);
+
+    List<PaymentTransaction> findByUserIdAndStatusOrderByTransactionDateDesc(String userId, String status);
 }

@@ -7,7 +7,19 @@ import java.util.List;
 
 public interface FileMetadataRepository extends MongoRepository<FileMetadataDocument, String> {
 
-    List<FileMetadataDocument> findByClerkId(String clerkId);
+    List<FileMetadataDocument> findByUserId(String userId);
 
-    Long countByClerkId(String clerkId);
+    List<FileMetadataDocument> findByUserIdAndFolderId(String userId, String folderId);
+
+    List<FileMetadataDocument> findByUserIdAndDeletedFalse(String userId);
+
+    List<FileMetadataDocument> findByUserIdAndFolderIdAndDeletedFalse(String userId, String folderId);
+
+    List<FileMetadataDocument> findByUserIdAndFavoriteTrueAndDeletedFalse(String userId);
+
+    List<FileMetadataDocument> findByUserIdAndDeletedTrueOrderByDeletedAtDesc(String userId);
+
+    List<FileMetadataDocument> findByUserIdAndFavoriteTrue(String userId);
+
+    Long countByUserId(String userId);
 }

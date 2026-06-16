@@ -1,9 +1,8 @@
 package in.bushansirgur.cloudshareapi.controller;
 
 import in.bushansirgur.cloudshareapi.document.PaymentTransaction;
-import in.bushansirgur.cloudshareapi.document.ProfileDocument;
 import in.bushansirgur.cloudshareapi.repository.PaymentTransactionRepository;
-import in.bushansirgur.cloudshareapi.service.ProfileService;
+import in.bushansirgur.cloudshareapi.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +17,13 @@ import java.util.List;
 public class TransactionController {
 
     private final PaymentTransactionRepository paymentTransactionRepository;
-    private final ProfileService profileService;
+    private final SecurityUtil securityUtil;
 
     @GetMapping
     public ResponseEntity<?> getUserTransactions() {
-        ProfileDocument currentProfile = profileService.getCurrentProfile();
-        String clerkId = currentProfile.getClerkId();
-
-        List<PaymentTransaction> transactions = paymentTransactionRepository.findByClerkIdAndStatusOrderByTransactionDateDesc(clerkId, "SUCCESS");
+        String userId = securityUtil.getCurrentUserId();
+        List<PaymentTransaction> transactions =
+                paymentTransactionRepository.findByUserIdAndStatusOrderByTransactionDateDesc(userId, "SUCCESS");
         return ResponseEntity.ok(transactions);
     }
 }

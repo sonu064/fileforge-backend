@@ -1,58 +1,48 @@
 package in.bushansirgur.cloudshareapi.service;
 
-import in.bushansirgur.cloudshareapi.document.UserCredits;
-import in.bushansirgur.cloudshareapi.repository.UserCreditsRepository;
+import in.bushansirgur.cloudshareapi.document.UserDocument;
+import in.bushansirgur.cloudshareapi.exceptions.ResourceNotFoundException;
+import in.bushansirgur.cloudshareapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/** Credits now live directly on the user document (the users collection). */
 @Service
 @RequiredArgsConstructor
 public class UserCreditsService {
 
-    private final UserCreditsRepository userCreditsRepository;
-    private final ProfileService profileService;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserCredits createInitialCredits(String clerkId) {
-        UserCredits userCredits = UserCredits.builder()
-                .clerkId(clerkId)
-                .credits(5)
-                .plan("BASIC")
-                .build();
-        return userCreditsRepository.save(userCredits);
+    public UserDocument getUserCredits() {
+        return userService.getCurrentUser();
     }
 
-    public UserCredits getUserCredits(String clerkId) {
-        return userCreditsRepository.findByClerkId(clerkId)
-                .orElseGet(() -> createInitialCredits(clerkId));
-    }
-
-    public UserCredits getUserCredits() {
-        String clerkId = profileService.getCurrentProfile().getClerkId();
-        return getUserCredits(clerkId);
+    public UserDocument getUserCredits(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User account not found"));
     }
 
     public Boolean hasEnoughCredits(int requiredCredits) {
-        UserCredits userCredits = getUserCredits();
-        return userCredits.getCredits() >= requiredCredits;
+        UserDocument user = getUserCredits();
+        return user.getCredits() != null && user.getCredits() >= requiredCredits;
     }
 
-    public UserCredits consumeCredit() {
-        UserCredits userCredits = getUserCredits();
-
-        if (userCredits.getCredits() <= 0) {
+    public UserDocument consumeCredit() {
+        UserDocument user = getUserCredits();
+        int current = user.getCredits() == null ? 0 : user.getCredits();
+        if (current <= 0) {
             return null;
         }
-
-        userCredits.setCredits(userCredits.getCredits() - 1);
-        return userCreditsRepository.save(userCredits);
+        user.setCredits(current - 1);
+        return userRepository.save(user);
     }
 
-    public UserCredits addCredits(String clerkId, Integer creditsToAdd, String plan) {
-        UserCredits userCredits = userCreditsRepository.findByClerkId(clerkId)
-                .orElseGet(() -> createInitialCredits(clerkId));
-
-        userCredits.setCredits(userCredits.getCredits() + creditsToAdd);
-        userCredits.setPlan(plan);
-        return userCreditsRepository.save(userCredits);
+    public UserDocument addCredits(String userId, Integer creditsToAdd, String plan) {
+        UserDocument user = getUserCredits(userId);
+        int current = user.getCredits() == null ? 0 : user.getCredits();
+        user.setCredits(current + creditsToAdd);
+        user.setPlan(plan);
+        return userRepository.save(user);
     }
 }

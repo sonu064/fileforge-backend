@@ -4,29 +4,30 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Document(collection = "folders")
 @Data
 @Builder
-@Document(collection = "profiles")
-public class ProfileDocument {
+@NoArgsConstructor
+@AllArgsConstructor
+public class FolderDocument {
 
     @Id
     private String id;
-    private String clerkId;
-    @Indexed(unique = true)
-    private String email;
-    private String firstName;
-    private String lastName;
-    private Integer credits;
-    private String photoUrl;
-    @CreatedDate
+
+    private String folderName;
+
+    @Indexed
+    private String userId;
+
+    /** Null = top-level folder. */
+    private String parentFolderId;
+
     private Instant createdAt;
+    private Instant updatedAt;
 }
