@@ -105,19 +105,31 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
-        UserDocument user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+        try {
+            log.info("Login request email={}", request.getEmail());
+            String email = request.getEmail().trim().toLowerCase();
+            UserDocument user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+            log.info("User found={}", user != null);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid email or password");
+            boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+            log.info("Password matches={}", matches);
+            if (!matches) {
+                throw new BadCredentialsException("Invalid email or password");
+            }
+
+            if (requireEmailVerification && !user.isEmailVerified()) {
+                throw new IllegalStateException("Please verify your email before signing in.");
+            }
+
+            log.info("Generating JWT for user={}", user.getId());
+            return issueTokens(user);
+        } catch (BadCredentialsException | IllegalStateException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Login failed", ex);
+            throw ex;
         }
-
-        if (requireEmailVerification && !user.isEmailVerified()) {
-            throw new IllegalStateException("Please verify your email before signing in.");
-        }
-
-        return issueTokens(user);
     }
 
     public MessageResponse verifyEmail(String token) {
