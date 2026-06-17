@@ -1,9 +1,11 @@
 package in.bushansirgur.cloudshareapi.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -28,7 +30,8 @@ public class MongoIndexConfig {
 
     private final MongoTemplate mongoTemplate;
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
+    @Order(1)
     public void ensureIndexes() {
         ensureTtlIndex("refresh_tokens");
         ensureTtlIndex("email_verification_tokens");
